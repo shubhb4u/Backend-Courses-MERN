@@ -3,18 +3,39 @@ const app = express();
 
 app.use(express.json());
 
-let ADMINS = [];
+let ADMINS = []; //This gets populated by signUp route - 
 let USERS = [];
 let COURSES = [];
 
+//Creating a middleware to protect admin routes - 
+const adminAuthentication = (req, res, next) => {
+  const {username, password} = req.body;
+  const admin = ADMINS.find(a => a.username === username && a.password ===password);
+  if(admin){
+    next();
+  }
+  else{
+    res.status(403).json({message: 'Admin authentication failed'});
+  }
+}
+
 // Admin routes
 app.post('/admin/signup', (req, res) => {
-  // logic to sign up admin
-  const admin
+  // Cjeck if the incoming USERNAME matches with the database admin
+  const admin = req.body;
+  const existingAdmin = ADMINS.find(a => a.username === admin.username);
+  if(existingAdmin){
+    res.status(403).json({message: 'user already exists'});
+  }
+  else{
+    ADMINS.push(admin);
+    res.json({message: 'New admin created'});
+  }
 });
 
-app.post('/admin/login', (req, res) => {
+app.post('/admin/login', adminAuthentication, (req, res) => {
   // logic to log in admin
+
 });
 
 app.post('/admin/courses', (req, res) => {
